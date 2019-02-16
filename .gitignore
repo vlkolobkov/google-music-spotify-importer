@@ -1,0 +1,4 @@
+.state
+env.ps1
+.cache*
+.vscode
