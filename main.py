@@ -30,7 +30,10 @@ def create_spotify_playlists(spotify, playlists):
 def create_spotify_playlist(spotify, name, tracks):
     print(f"Creating {name} playlist in spotify")
     created = spotify.user_playlist_create(spotify_username, name, False)
-    spotify.user_playlist_add_tracks(spotify_username, created['id'], tracks)
+    chunk_size = 100 # max allowed in single request
+    for i in range(0, len(tracks), chunk_size):
+        chunk = tracks[i:i+chunk_size]
+        spotify.user_playlist_add_tracks(spotify_username, created['id'], chunk)
 
 def get_spotify_tracks(spotify, playlist, tracks, limit=None):
     print("Matching tracks to those in spotify")
@@ -91,31 +94,36 @@ def clean_name(name):
     return ret.strip()
 
 def find_spotify_track(spotify, track):
-    # because of (Deluxe Edition), etc
-    track['title'] = clean_name(track['title'])
-    # because of (Deluxe Edition), etc
-    track['album'] = clean_name(track['album'])
-    # because of (feat: Artist), etc
-    track['artist'] = clean_name(track['artist'])
+    try:
+        # because of (Deluxe Edition), etc
+        track['title'] = clean_name(track['title'])
+        # because of (Deluxe Edition), etc
+        track['album'] = clean_name(track['album'])
+        # because of (feat: Artist), etc
+        track['artist'] = clean_name(track['artist'])
 
-    full_query = 'track:{title} artist:{artist} album:{album} year:{year}'.format(**track)
-    full = spotify.search(q=full_query, type='track', limit=1)
-    if len(full['tracks']['items']) != 0:
-        return full['tracks']['items'][0]
+        full_query = 'track:{title} artist:{artist} album:{album} year:{year}'.format(**track)
+        full = spotify.search(q=full_query, type='track', limit=1)
+        if len(full['tracks']['items']) != 0:
+            return full['tracks']['items'][0]
 
-    # some times years are misleading because of rereleases
-    no_year_query = 'track:{title} artist:{artist} album:{album}'.format(**track)
-    no_year = spotify.search(q=no_year_query, type='track', limit=1)
-    if len(no_year['tracks']['items']) != 0:
-        return no_year['tracks']['items'][0]
+        # some times years are misleading because of rereleases
+        no_year_query = 'track:{title} artist:{artist} album:{album}'.format(**track)
+        no_year = spotify.search(q=no_year_query, type='track', limit=1)
+        if len(no_year['tracks']['items']) != 0:
+            return no_year['tracks']['items'][0]
 
-    # see if its on a greatest hits album, a single or some other release
-    no_album_query = 'track:{title} artist:{artist}'.format(**track)
-    no_album = spotify.search(q=no_album_query, type='track', limit=1)
-    if len(no_album['tracks']['items']) != 0:
-        return no_album['tracks']['items'][0]
+        # see if its on a greatest hits album, a single or some other release
+        no_album_query = 'track:{title} artist:{artist}'.format(**track)
+        no_album = spotify.search(q=no_album_query, type='track', limit=1)
+        if len(no_album['tracks']['items']) != 0:
+            return no_album['tracks']['items'][0]
 
-    print(f"Could not find {track} in Spotify")
+        print(f"Could not find {track} in Spotify")
+    except Exception as e:
+        print(f"An expection occured fetching {track}")
+        print(e)
+        return None
 
 def extract_google_track(track):
     if not 'track' in track:
