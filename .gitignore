@@ -2,3 +2,5 @@
 env.ps1
 .cache*
 .vscode
+/venv/*
+/.idea/*

@@ -1,6 +1,6 @@
 # Google Music To Spotify
 
-This tool exports the user's Google Music playlists to spotify.
+This tool exports the user's Google Music playlists and albums to spotify.
 
 ## Usage
 
@@ -40,3 +40,9 @@ Unfortunately the pre-created auto playlist is not accessible from outside of an
 To do so, go to your "playlists" page in Google music find "Thumbs up" in the "Auto-playlists" section.
 Mouse over it, and click the three-dots menu, select "Add playlist to playlist" > "New Playlist".
 When you specify `--favorites-playlist` make sure to supply the same name (capitilization matters!).
+
+### Albums
+
+All Google music favorite tracks transfer to Spotify liked albums.
+
+P.S. In this fork transfer albums added.
